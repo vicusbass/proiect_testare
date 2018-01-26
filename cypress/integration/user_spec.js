@@ -10,6 +10,8 @@ const INPUT_FIRST_NAME = 'input[name="first_name"]'
 const INPUT_LAST_NAME = 'input[name="last_name"]'
 const INPUT_SUBMIT = 'input[type="submit"]'
 const INPUT_RESET = 'input[type="reset"]'
+const INPUT_TITLE = 'input[name="title"]'
+//URLs
 const ROOT_URL = 'http://mylibrary.test/src'
 const LOGIN_URL = ROOT_URL + '/login.php'
 const REGISTER_URL = ROOT_URL + '/register.php'
@@ -90,7 +92,85 @@ describe('Authentication scenarios', function () {
             cy.get(INPUT_CONFIRM_PASSWORD).type("secret")
             //click Submit
             cy.get(INPUT_SUBMIT).click()
+            //should be redirected to login page
+            cy.url(LOGIN_URL)
+        })
 
+    })
+
+    context('User dashboard', function () {
+        const firstname = faker.name.firstName()
+        const lastname = faker.name.lastName()
+        const email = firstname + '.' + lastname + faker.random.number() + '@my.library'
+
+        before(function () {
+            //open registration page
+            cy.visit(REGISTER_URL)
+
+            //type values in every input fields
+            cy.get(INPUT_EMAIL).type(email)
+            cy.get(INPUT_FIRST_NAME).type(firstname)
+            cy.get(INPUT_LAST_NAME).type(lastname)
+            cy.get(INPUT_PASSWORD).type('secret')
+            cy.get(INPUT_CONFIRM_PASSWORD).type('secret')
+            //click Submit
+            cy.get(INPUT_SUBMIT).click()
+            //should be redirected to login page
+            cy.url(LOGIN_URL)
+        })
+
+        beforeEach(function () {
+            cy.visit(LOGIN_URL)
+            cy.get(INPUT_EMAIL).type(email)
+            cy.get(INPUT_PASSWORD).type('secret')
+            cy.get(INPUT_SUBMIT).click()
+            cy.url(ROOT_URL + '/index.php')
+            cy.get('h1').contains('Hi, ' + firstname + ' ' + lastname)
+        })
+
+        it('should find book by partial title', function () {
+            cy.contains('Search book').click()
+            cy.url(ROOT_URL + '/searchbook.php')
+            cy.get(INPUT_TITLE).type('Middle')
+            cy.get('button[name="searchBook"]').click()
+            //should clean search terms
+            cy.get(INPUT_TITLE).should('have.value', '')
+            //should see only one book in the table
+            cy.get('tbody > tr').should('have.length', 1)
+            cy.get('tbody > tr > td').first().contains('Middlesex')
+            cy.get('tbody > tr > td').eq(1).contains('Jeffrey Eugenides')
+            cy.get('tbody > tr > td').eq(2).contains('2002')
+            cy.get('tbody > tr > td').eq(3).contains('0312422156')
+        })
+
+        it('should find book by partial name of author', function () {
+            cy.contains('Search book').click()
+            cy.url(ROOT_URL + '/searchbook.php')
+            cy.get('input#authors').type('Eugenides')
+            cy.get('button[name="searchBook"]').click()
+            //should clean search terms
+            cy.get('input#authors').should('have.value', '')
+            //should see only one book in the table
+            cy.get('tbody > tr').should('have.length', 1)
+            cy.get('tbody > tr > td').first().contains('Middlesex')
+            cy.get('tbody > tr > td').eq(1).contains('Jeffrey Eugenides')
+            cy.get('tbody > tr > td').eq(2).contains('2002')
+            cy.get('tbody > tr > td').eq(3).contains('0312422156')
+        })
+
+        it('should find book by ISBN', function () {
+            cy.contains('Search book').click()
+            cy.url(ROOT_URL + '/searchbook.php')
+            cy.get('input#isbn').type('0312422156')
+            cy.get('button[name="searchBook"]').click()
+            //should clean search terms
+            cy.get('input#isbn').should('have.value', '')
+            //should see only one book in the table
+            cy.get('tbody > tr').should('have.length', 1)
+            cy.get('tbody > tr > td').first().contains('Middlesex')
+            cy.get('tbody > tr > td').eq(1).contains('Jeffrey Eugenides')
+            cy.get('tbody > tr > td').eq(2).contains('2002')
+            cy.get('tbody > tr > td').eq(3).contains('0312422156')
         })
 
     })

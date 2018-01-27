@@ -16,7 +16,7 @@ const ROOT_URL = 'http://mylibrary.test/src'
 const LOGIN_URL = ROOT_URL + '/login.php'
 const REGISTER_URL = ROOT_URL + '/register.php'
 
-describe('Authentication scenarios', function () {
+describe('User scenarios', function () {
     context('Login page', function () {
         beforeEach(function () {
             //open initial page
